@@ -13,7 +13,7 @@ import * as JSZip from 'jszip';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  group = new FormGroup({
+  public group = new FormGroup({
     firstname: new FormControl(''),
     lastname: new FormControl(''),
     role: new FormControl(''),
@@ -81,6 +81,35 @@ export class AppComponent {
     this.documentService.generate(this.group.value as ITemplateObject);
   }
 
+  public importCv(target: any) {
+    const reader = new FileReader();
+    const onReaderLoad = (event: any) => {
+      const formValue = JSON.parse(event.target.result);
+      const formArrayNames: TPossibleFormArrayName[] = ['methods', 'tools', 'certificates', 'languages', 'experiences', 'educations'];
+
+      formArrayNames.forEach(formArrayName => {
+        formValue[formArrayName].forEach((value: TPossibleFormValue) => {
+          this.addToFormArray(formArrayName, value);
+        });
+      });
+
+      this.group.patchValue(formValue);
+    }
+
+    reader.onload = onReaderLoad;
+    reader.readAsText(target.files[0]);
+  }
+
+  public importTemplate(target: any) {
+    const reader = new FileReader();
+    const onReaderLoad = (event: any) => {
+      this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
+    };
+
+    reader.onload = onReaderLoad;
+    reader.readAsArrayBuffer(target.files[0]);
+  }
+
   private createGroupForFormArray(formArrayName: string, value?: TPossibleFormValue): FormGroup {
     switch(formArrayName) {
       case 'methods':
@@ -119,38 +148,9 @@ export class AppComponent {
     }
   }
 
-  public renderPreview(): void {
+  private renderPreview(): void {
     if (this.blob) {
       docx.renderAsync(this.blob, document.getElementById('container') as HTMLElement);
     }
-  }
-
-  public importCv(target: any) {
-    const reader = new FileReader();
-    const onReaderLoad = (event: any) => {
-      const formValue = JSON.parse(event.target.result);
-      const formArrayNames: TPossibleFormArrayName[] = ['methods', 'tools', 'certificates', 'languages', 'experiences', 'educations'];
-
-      formArrayNames.forEach(formArrayName => {
-        formValue[formArrayName].forEach((value: TPossibleFormValue) => {
-          this.addToFormArray(formArrayName, value);
-        });
-      });
-
-      this.group.patchValue(formValue);
-    }
-
-    reader.onload = onReaderLoad;
-    reader.readAsText(target.files[0]);
-  }
-
-  public importTemplate(target: any) {
-    const reader = new FileReader();
-    const onReaderLoad = (event: any) => {
-      this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
-    };
-
-    reader.onload = onReaderLoad;
-    reader.readAsArrayBuffer(target.files[0]);
   }
 }
