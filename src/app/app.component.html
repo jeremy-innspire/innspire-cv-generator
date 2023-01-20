@@ -66,55 +66,55 @@
         <ng-container formArrayName="methods">
           <ng-container *ngFor="let methodGroup of group.controls.methods.controls; index as i" [formGroupName]="i">
             <div class="flex gap-4 items-center">
-              <span class="font-bold text-xl inline">Method {{i + 1}}</span> <span (click)="deleteMethod(i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
+              <span class="font-bold text-xl inline">Method {{i + 1}}</span> <span (click)="deleteGroupFromFormArray('methods', i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
             </div>
             <input type="text" placeholder="Method" formControlName="method">
           </ng-container>
         </ng-container>
-        <app-button (click)="addMethod()">+ Method</app-button>
+        <app-button (click)="addToFormArray('methods')">+ Method</app-button>
 
         <hr class="my-4 bg-primary border border-primary" />
 
         <ng-container formArrayName="tools">
           <ng-container *ngFor="let toolGroup of group.controls.tools.controls; index as i" [formGroupName]="i">
             <div class="flex gap-4 items-center">
-              <span class="font-bold text-xl">Tool {{i + 1}}</span> <span (click)="deleteTool(i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
+              <span class="font-bold text-xl">Tool {{i + 1}}</span> <span (click)="deleteGroupFromFormArray('tools', i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
             </div>
             <input type="text" placeholder="Tool" formControlName="tool">
           </ng-container>
         </ng-container>
-        <app-button (click)="addTool()">+ Tool</app-button>
+        <app-button (click)="addToFormArray('tools')">+ Tool</app-button>
 
         <hr class="my-4 bg-primary border border-primary" />
 
         <ng-container formArrayName="certificates">
           <ng-container *ngFor="let certificateGroup of group.controls.certificates.controls; index as i" [formGroupName]="i">
             <div class="flex gap-4 items-center">
-              <span class="font-bold text-xl">Certificate {{i + 1}}</span> <span (click)="deleteCertificate(i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
+              <span class="font-bold text-xl">Certificate {{i + 1}}</span> <span (click)="deleteGroupFromFormArray('certificates', i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
             </div>
             <input type="text" placeholder="Certificate" formControlName="certificate">
           </ng-container>
         </ng-container>
-        <app-button (click)="addCertificate()">+ Certificate</app-button>
+        <app-button (click)="addToFormArray('certificates')">+ Certificate</app-button>
 
         <hr class="my-4 bg-primary border border-primary" />
 
         <ng-container formArrayName="languages">
           <ng-container *ngFor="let languageGroup of group.controls.languages.controls; index as i" [formGroupName]="i">
             <div class="flex gap-4 items-center">
-              <span class="font-bold text-xl">Language {{i + 1}}</span> <span (click)="deleteLanguage(i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
+              <span class="font-bold text-xl">Language {{i + 1}}</span> <span (click)="deleteGroupFromFormArray('languages', i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
             </div>
             <input type="text" placeholder="Language" formControlName="language">
           </ng-container>
         </ng-container>
-        <app-button (click)="addLanguage()">+ Language</app-button>
+        <app-button (click)="addToFormArray('languages')">+ Language</app-button>
 
         <hr class="my-4 bg-primary border border-primary" />
 
         <ng-container formArrayName="experiences">
           <ng-container *ngFor="let experienceGroup of group.controls.experiences.controls; index as i" [formGroupName]="i">
             <div class="flex gap-4 items-center">
-              <span class="font-bold text-xl">Experience {{i + 1}}</span> <span (click)="deleteExperience(i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
+              <span class="font-bold text-xl">Experience {{i + 1}}</span> <span (click)="deleteGroupFromFormArray('experiences', i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
             </div>
             <input type="text" [placeholder]="'Experience year '" formControlName="experienceYear">
             <input type="text" [placeholder]="'Experience role '" formControlName="experienceRole">
@@ -122,25 +122,25 @@
             <textarea [placeholder]="'Experience description '" formControlName="experienceDescription"></textarea>
           </ng-container>
         </ng-container>
-        <app-button (click)="addExperience()">+ Experience</app-button>
+        <app-button (click)="addToFormArray('experiences')">+ Experience</app-button>
 
         <hr class="my-4 bg-primary border border-primary" />
 
         <ng-container formArrayName="educations">
           <ng-container *ngFor="let educationGroup of group.controls.educations.controls; index as i" [formGroupName]="i">
             <div class="flex gap-4 items-center">
-              <span class="font-bold text-xl">Education {{i + 1}}</span> <span (click)="deleteEducation(i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
+              <span class="font-bold text-xl">Education {{i + 1}}</span> <span (click)="deleteGroupFromFormArray('educations', i)" class="text-red-400 font-bold inline cursor-pointer" title="Delete">X</span>
             </div>
             <input type="text" [placeholder]="'Education period '" formControlName="educationPeriod">
             <input type="text" [placeholder]="'Education '" formControlName="education">
             <input type="text" [placeholder]="'Education institute '" formControlName="educationInstitute">
           </ng-container>
         </ng-container>
-        <app-button (click)="addEducation()">+ Education</app-button>
+        <app-button (click)="addToFormArray('educations')">+ Education</app-button>
 
       </div>
       <div class="pt-10 flex justify-center gap-4">
-        <app-button class="w-96" (click)="generateDocument()">Download CV files</app-button>
+        <app-button class="w-96" (click)="downloadDocument()">Download CV files</app-button>
         <label class="w-96" for="import-cv-btn">
           <app-button class="w-full">Import CV Json</app-button>
         </label>

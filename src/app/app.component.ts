@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormGroup, FormControl, FormArray } from '@angular/forms';
 import { DocumentService } from './services/document.service';
 import { debounceTime } from 'rxjs';
+import { ICertificate, IEducation, IExperience, ILanguage, IMethod, ITemplateObject, ITool, TPossibleFormArrayName, TPossibleFormValue } from './interfaces/template-object';
 import * as docx from 'docx-preview';
 import * as FileSaver from 'file-saver';
 import * as JSZip from 'jszip';
@@ -24,12 +25,12 @@ export class AppComponent {
     emailManager: new FormControl(''),
     phoneManager: new FormControl(''),
     hobbyDescription: new FormControl(''),
-    methods: new FormArray<any>([]),
-    tools: new FormArray<any>([]),
-    certificates: new FormArray<any>([]),
-    languages: new FormArray<any>([]),
-    experiences: new FormArray<any>([]),
-    educations: new FormArray<any>([])
+    methods: new FormArray([]),
+    tools: new FormArray([]),
+    certificates: new FormArray([]),
+    languages: new FormArray([]),
+    experiences: new FormArray([]),
+    educations: new FormArray([])
   });
 
   private blob: Blob | undefined;
@@ -38,141 +39,87 @@ export class AppComponent {
   constructor(private documentService: DocumentService) {
     this.documentService.documentObservable.subscribe((blob) => {
       this.blob = blob;
-      this.preview();
+      this.renderPreview();
     })
 
-    this.documentService.generate(this.group.value);
+    this.documentService.generate(this.group.value as ITemplateObject);
 
     this.group.valueChanges.pipe(this.debounce).subscribe((val) => {
-      this.documentService.generate(val);
+      this.documentService.generate(val as ITemplateObject);
     })
   }
 
-  public generateDocument(): void {
+  public downloadDocument(): void {
     if (this.blob) {
+      const filename = `${this.group.value.firstname}-${this.group.value.lastname}-cv`;
+
       const zip = new JSZip();
-      zip.file(`${this.group.value.firstname}-${this.group.value.lastname}-cv.docx`, this.blob);
-      zip.file(`${this.group.value.firstname}-${this.group.value.lastname}-cv.json`, JSON.stringify(this.group.value));
+      zip.file(`${filename}.docx`, this.blob);
+      zip.file(`${filename}-cv.json`, JSON.stringify(this.group.value));
       zip.generateAsync({ type: 'blob' }).then((content) => {
-        FileSaver(content, `${this.group.value.firstname}-${this.group.value.lastname}-cv.zip`);
+        FileSaver(content, `${filename}-cv.zip`);
       });
     }
   }
 
-  public addMethod(method?: any) {
-    const methodGroup = new FormGroup({
-      method: new FormControl(method || ''),
-    })
-    this.group.controls.methods.controls.push(methodGroup);
+  public addToFormArray(formArrayName: TPossibleFormArrayName, value?: TPossibleFormValue): void {
+    const groupForFormArray = this.createGroupForFormArray(formArrayName, value);
+    const formArray = (this.group.get(formArrayName) as FormArray);
 
-    methodGroup.valueChanges.pipe(this.debounce).subscribe(() => {
-      this.group.controls.methods.updateValueAndValidity();
-      this.documentService.generate(this.group.value);
-    })
-  }
+    formArray.push(groupForFormArray);
 
-  public deleteMethod(index: number): void {
-    this.group.controls.methods.controls.splice(index, 1);
-    this.group.controls.methods.updateValueAndValidity();
-    this.documentService.generate(this.group.value);
-  }
-
-  public addTool(tool?: any) {
-    const toolGroup = new FormGroup({
-      tool: new FormControl(tool || ''),
-    })
-    this.group.controls.tools.controls.push(toolGroup);
-
-    toolGroup.valueChanges.pipe(this.debounce).subscribe(() => {
-      this.group.controls.tools.updateValueAndValidity();
-      this.documentService.generate(this.group.value);
+    groupForFormArray.valueChanges.pipe(this.debounce).subscribe(() => {
+      formArray.updateValueAndValidity();
+      this.documentService.generate(this.group.value as ITemplateObject);
     })
   }
 
-  public deleteTool(index: number): void {
-    this.group.controls.tools.controls.splice(index, 1);
-    this.group.controls.tools.updateValueAndValidity();
-    this.documentService.generate(this.group.value);
+  public deleteGroupFromFormArray(formArrayName: TPossibleFormArrayName, index: number): void {
+    const formArray = (this.group.get(formArrayName) as FormArray);
+    formArray.controls.splice(index, 1);
+    formArray.updateValueAndValidity();
+    this.documentService.generate(this.group.value as ITemplateObject);
   }
 
-  public addCertificate(certificate?: any) {
-    const certificateGroup = new FormGroup({
-      certificate: new FormControl(certificate || ''),
-    })
-    this.group.controls.certificates.controls.push(certificateGroup);
-
-    certificateGroup.valueChanges.pipe(this.debounce).subscribe(() => {
-      this.group.controls.certificates.updateValueAndValidity();
-      this.documentService.generate(this.group.value);
-    })
+  private createGroupForFormArray(formArrayName: string, value?: TPossibleFormValue): FormGroup {
+    switch(formArrayName) {
+      case 'methods':
+        return new FormGroup({
+          method: new FormControl((value as IMethod)?.method || ''),
+        });
+      case 'tools':
+        return new FormGroup({
+          tool: new FormControl((value as ITool)?.tool || ''),
+        });
+      case 'certificates':
+        return new FormGroup({
+          certificate: new FormControl((value as ICertificate)?.certificate || ''),
+        });
+      case 'languages':
+        return new FormGroup({
+          language: new FormControl((value as ILanguage)?.language)
+        });
+      case 'experiences':
+        const experience = value as IExperience;
+        return new FormGroup({
+          experienceYear: new FormControl(experience?.experienceYear || ''),
+          experienceRole: new FormControl(experience?.experienceRole || ''),
+          experienceEmployer: new FormControl(experience?.experienceEmployer || ''),
+          experienceDescription: new FormControl(experience?.experienceDescription || ''),
+        });
+      case 'educations':
+        const education = value as IEducation;
+        return new FormGroup({
+          educationPeriod: new FormControl(education?.educationPeriod || ''),
+          education: new FormControl(education?.education || ''),
+          educationInstitute: new FormControl(education?.educationInstitute || ''),
+        })
+      default:
+        throw new Error(`Unknown formArray name used: "${formArrayName}"`)
+    }
   }
 
-  public deleteCertificate(index: number): void {
-    this.group.controls.certificates.controls.splice(index, 1);
-    this.group.controls.certificates.updateValueAndValidity();
-    this.documentService.generate(this.group.value);
-  }
-
-  public addLanguage(language?: any) {
-    const languageGroup = new FormGroup({
-      language: new FormControl(language || '')
-    });
-    this.group.controls.languages.controls.push(languageGroup);
-
-    languageGroup.valueChanges.pipe(this.debounce).subscribe(() => {
-      this.group.controls.languages.updateValueAndValidity();
-      this.documentService.generate(this.group.value);
-    })
-  }
-
-  public deleteLanguage(index: number): void {
-    this.group.controls.languages.controls.splice(index, 1);
-    this.group.controls.languages.updateValueAndValidity();
-    this.documentService.generate(this.group.value);
-  }
-
-  public addExperience(experience?: any) {
-    const experienceGroup = new FormGroup({
-      experienceYear: new FormControl(experience?.experienceYear || ''),
-      experienceRole: new FormControl(experience?.experienceRole || ''),
-      experienceEmployer: new FormControl(experience?.experienceEmployer || ''),
-      experienceDescription: new FormControl(experience?.experienceDescription || ''),
-    });
-    this.group.controls.experiences.controls.push(experienceGroup);
-
-    experienceGroup.valueChanges.pipe(this.debounce).subscribe(() => {
-      this.group.controls.experiences.updateValueAndValidity();
-      this.documentService.generate(this.group.value);
-    })
-  }
-
-  public deleteExperience(index: number): void {
-    this.group.controls.experiences.controls.splice(index, 1);
-    this.group.controls.experiences.updateValueAndValidity();
-    this.documentService.generate(this.group.value);
-  }
-
-  public addEducation(education?: any) {
-    const educationGroup = new FormGroup({
-      educationPeriod: new FormControl(education?.educationPeriod || ''),
-      education: new FormControl(education?.education || ''),
-      educationInstitute: new FormControl(education?.educationInstitute || ''),
-    })
-    this.group.controls.educations.controls.push(educationGroup);
-
-    educationGroup.valueChanges.pipe(this.debounce).subscribe(() => {
-      this.group.controls.educations.updateValueAndValidity();
-      this.documentService.generate(this.group.value);
-    })
-  }
-
-  public deleteEducation(index: number): void {
-    this.group.controls.educations.controls.splice(index, 1);
-    this.group.controls.educations.updateValueAndValidity();
-    this.documentService.generate(this.group.value);
-  }
-
-  public preview(): void {
+  public renderPreview(): void {
     if (this.blob) {
       docx.renderAsync(this.blob, document.getElementById('container') as HTMLElement);
     }
@@ -182,30 +129,13 @@ export class AppComponent {
     const reader = new FileReader();
     const onReaderLoad = (event: any) => {
       const formValue = JSON.parse(event.target.result);
+      const formArrayNames: TPossibleFormArrayName[] = ['methods', 'tools', 'certificates', 'languages', 'experiences', 'educations'];
 
-      formValue.methods.forEach((method: any) => {
-        this.addMethod(method);
-      })
-
-      formValue.tools.forEach((tool: any) => {
-        this.addTool(tool);
-      })
-
-      formValue.certificates.forEach((certificate: any) => {
-        this.addCertificate(certificate);
-      })
-
-      formValue.languages.forEach((language: any) => {
-        this.addLanguage(language);
-      })
-
-      formValue.experiences.forEach((experience: any) => {
-        this.addExperience(experience);
-      })
-
-      formValue.educations.forEach((education: any) => {
-        this.addEducation(education);
-      })
+      formArrayNames.forEach(formArrayName => {
+        formValue[formArrayName].forEach((value: TPossibleFormValue) => {
+          this.addToFormArray(formArrayName, value);
+        });
+      });
 
       this.group.patchValue(formValue);
     }
@@ -217,7 +147,7 @@ export class AppComponent {
   public importTemplate(target: any) {
     const reader = new FileReader();
     const onReaderLoad = (event: any) => {
-      this.documentService.updateTemplate(event.target.result, this.group.value);
+      this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
     };
 
     reader.onload = onReaderLoad;

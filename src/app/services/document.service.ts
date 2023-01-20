@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import * as PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
+import { ITemplateObject } from '../interfaces/template-object';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class DocumentService {
 
   constructor(private httpClient: HttpClient) { }
 
-  public generate(form: any): void {
+  public generate(form: ITemplateObject): void {
     if (this.templateArrayBuffer) {
       this.createAndNextDocument(this.templateArrayBuffer, form);
     } else {
@@ -27,12 +28,12 @@ export class DocumentService {
     }
   }
 
-  public updateTemplate(templateArrayBuffer: ArrayBuffer, form: any): void {
+  public updateTemplate(templateArrayBuffer: ArrayBuffer, formValue: ITemplateObject): void {
     this.templateArrayBuffer = templateArrayBuffer;
-    this.createAndNextDocument(templateArrayBuffer, form);
+    this.createAndNextDocument(templateArrayBuffer, formValue);
   }
 
-  private createAndNextDocument(templateArrayBuffer: ArrayBuffer, form: any) {
+  private createAndNextDocument(templateArrayBuffer: ArrayBuffer, form: ITemplateObject) {
     const zip = new PizZip(templateArrayBuffer);
     const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
@@ -47,8 +48,8 @@ export class DocumentService {
 
     doc.render(newForm);
     const uInt8Array: Uint8Array = doc.getZip().generate({
-        type: "nodebuffer",
-        compression: "DEFLATE",
+        type: 'nodebuffer',
+        compression: 'DEFLATE',
     });
 
     this.documentSubject.next(new Blob([uInt8Array]));
