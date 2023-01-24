@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import * as PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { ITemplateObject } from '../interfaces/template-object';
+const expressionParser = require("docxtemplater/expressions.js");
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +39,7 @@ export class DocumentService {
     const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+        parser: expressionParser
     });
 
     const newForm = {
