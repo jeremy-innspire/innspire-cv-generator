@@ -21,6 +21,7 @@ export class AppComponent {
     city: new FormControl(''),
     phone: new FormControl(''),
     mail: new FormControl(''),
+    linkedin: new FormControl(''),
     motivation: new FormControl(''),
     emailManager: new FormControl(''),
     phoneManager: new FormControl(''),
@@ -54,7 +55,7 @@ export class AppComponent {
       const filename = `${this.group.value.firstname}-${this.group.value.lastname}-cv`;
 
       const zip = new JSZip();
-      zip.file(`${filename}.docx`, this.blob);
+      zip.file(`${filename}-unedited.docx`, this.blob);
       zip.file(`${filename}-cv.json`, JSON.stringify(this.group.value));
       zip.generateAsync({ type: 'blob' }).then((content) => {
         FileSaver(content, `${filename}-cv.zip`);
@@ -89,15 +90,18 @@ export class AppComponent {
 
       formArrayNames.forEach(formArrayName => {
         formValue[formArrayName].forEach((value: TPossibleFormValue) => {
+
           this.addToFormArray(formArrayName, value);
         });
       });
 
       this.group.patchValue(formValue);
+      console.log(this.group.value)
     }
 
     reader.onload = onReaderLoad;
     reader.readAsText(target.files[0]);
+
   }
 
   public importTemplate(target: any) {
@@ -135,6 +139,7 @@ export class AppComponent {
           experienceRole: new FormControl(experience?.experienceRole || ''),
           experienceEmployer: new FormControl(experience?.experienceEmployer || ''),
           experienceDescription: new FormControl(experience?.experienceDescription || ''),
+          experienceMethods: new FormControl(experience?.experienceMethods || '')
         });
       case 'educations':
         const education = value as IEducation;

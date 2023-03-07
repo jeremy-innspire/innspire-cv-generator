@@ -39,17 +39,25 @@
         </div>
 
         <div class="flex flex-col 2xl:grid 2xl:grid-cols-6 justify-between gap-4">
-          <div class="2xl:col-span-2">
+          <div class="2xl:col-span-3">
             <span class="font-bold text-xl">Your mail</span>
-            <input type="email" placeholder="mail" formControlName="mail" />
+            <input type="email" placeholder="Email" formControlName="mail" />
           </div>
 
-          <div class="2xl:col-span-2">
+          <div class="2xl:col-span-3">
+            <span class="font-bold text-xl">Linkedin url</span>
+            <input type="email" placeholder="Linkedin url" formControlName="linkedin" />
+          </div>
+        </div>
+
+        <div class="flex flex-col 2xl:grid 2xl:grid-cols-6 justify-between gap-4">
+
+          <div class="2xl:col-span-3">
             <span class="font-bold text-xl">Email manager</span>
             <input type="text" placeholder="Email manager" formControlName="emailManager" />
           </div>
 
-          <div class="2xl:col-span-2">
+          <div class="2xl:col-span-3">
             <span class="font-bold text-xl">Phone manager</span>
             <input type="text" placeholder="Phone manager" formControlName="phoneManager" />
           </div>
@@ -119,6 +127,7 @@
             <input type="text" [placeholder]="'Experience year '" formControlName="experienceYear">
             <input type="text" [placeholder]="'Experience role '" formControlName="experienceRole">
             <input type="text" [placeholder]="'Experience employer '" formControlName="experienceEmployer">
+            <input type="text" [placeholder]="'Specialties & methodologies '" formControlName="experienceMethods">
             <textarea [placeholder]="'Experience description '" formControlName="experienceDescription"></textarea>
           </ng-container>
         </ng-container>

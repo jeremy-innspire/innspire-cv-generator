@@ -6,6 +6,7 @@ export interface ITemplateObject {
   city: string;
   phone: string;
   mail: string;
+  linkedin: string;
   motivation: string;
   emailManager: string;
   phoneManager: string;
@@ -39,6 +40,7 @@ export interface IExperience {
   experienceRole: string;
   experienceEmployer: string;
   experienceDescription: string;
+  experienceMethods?: string[];
 }
 
 export interface IEducation {
