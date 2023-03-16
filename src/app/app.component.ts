@@ -43,11 +43,18 @@ export class AppComponent {
       this.renderPreview();
     })
 
-    this.documentService.generate(this.group.value as ITemplateObject);
+    this.documentService.updateMappings(this.group.value as ITemplateObject);
 
     this.group.valueChanges.pipe(this.debounce).subscribe((val) => {
-      this.documentService.generate(val as ITemplateObject);
+      this.documentService.updateMappings(val as ITemplateObject);
     })
+  }
+
+  public updatePhoto(target: EventTarget | null): void {
+    if (!(target instanceof HTMLInputElement && target?.files)) {
+      throw Error('Target should be input element with type="file"');
+    }
+    this.documentService.updatePhoto(target.files[0]);
   }
 
   public downloadDocument(): void {
@@ -71,7 +78,7 @@ export class AppComponent {
 
     groupForFormArray.valueChanges.pipe(this.debounce).subscribe(() => {
       formArray.updateValueAndValidity();
-      this.documentService.generate(this.group.value as ITemplateObject);
+      this.documentService.updateMappings(this.group.value as ITemplateObject);
     })
   }
 
@@ -79,7 +86,7 @@ export class AppComponent {
     const formArray = (this.group.get(formArrayName) as FormArray);
     formArray.controls.splice(index, 1);
     formArray.updateValueAndValidity();
-    this.documentService.generate(this.group.value as ITemplateObject);
+    this.documentService.updateMappings(this.group.value as ITemplateObject);
   }
 
   public importCv(target: any) {
@@ -104,10 +111,15 @@ export class AppComponent {
 
   }
 
-  public importTemplate(target: any) {
+  public importTemplate(target: EventTarget | null) {
+    if (!(target instanceof HTMLInputElement && target?.files)) {
+      throw Error('Target should be input element with type="file"');
+    }
     const reader = new FileReader();
-    const onReaderLoad = (event: any) => {
-      this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
+    const onReaderLoad = (event: ProgressEvent<FileReader>) => {
+      if (event.target?.result instanceof ArrayBuffer) {
+        this.documentService.updateTemplate(event.target.result);
+      }
     };
 
     reader.onload = onReaderLoad;
@@ -115,7 +127,7 @@ export class AppComponent {
   }
 
   private createGroupForFormArray(formArrayName: string, value?: TPossibleFormValue): FormGroup {
-    switch(formArrayName) {
+    switch (formArrayName) {
       case 'methods':
         return new FormGroup({
           method: new FormControl((value as IMethod)?.method || ''),
