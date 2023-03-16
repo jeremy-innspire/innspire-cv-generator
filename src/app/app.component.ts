@@ -43,10 +43,10 @@ export class AppComponent {
       this.renderPreview();
     })
 
-    this.documentService.generate(this.group.value as ITemplateObject);
+    this.documentService.updateMappings(this.group.value as ITemplateObject);
 
     this.group.valueChanges.pipe(this.debounce).subscribe((val) => {
-      this.documentService.generate(val as ITemplateObject);
+      this.documentService.updateMappings(val as ITemplateObject);
     })
   }
 
@@ -78,7 +78,7 @@ export class AppComponent {
 
     groupForFormArray.valueChanges.pipe(this.debounce).subscribe(() => {
       formArray.updateValueAndValidity();
-      this.documentService.generate(this.group.value as ITemplateObject);
+      this.documentService.updateMappings(this.group.value as ITemplateObject);
     })
   }
 
@@ -86,7 +86,7 @@ export class AppComponent {
     const formArray = (this.group.get(formArrayName) as FormArray);
     formArray.controls.splice(index, 1);
     formArray.updateValueAndValidity();
-    this.documentService.generate(this.group.value as ITemplateObject);
+    this.documentService.updateMappings(this.group.value as ITemplateObject);
   }
 
   public importCv(target: any) {
@@ -118,7 +118,7 @@ export class AppComponent {
     const reader = new FileReader();
     const onReaderLoad = (event: ProgressEvent<FileReader>) => {
       if (event.target?.result instanceof ArrayBuffer) {
-        this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
+        this.documentService.updateTemplate(event.target.result);
       }
     };
 
