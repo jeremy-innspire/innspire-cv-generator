@@ -50,6 +50,13 @@ export class AppComponent {
     })
   }
 
+  public updatePhoto(target: EventTarget | null): void {
+    if (!(target instanceof HTMLInputElement && target?.files)) {
+      throw Error('Target should be input element with type="file"');
+    }
+    this.documentService.updatePhoto(target.files[0]);
+  }
+
   public downloadDocument(): void {
     if (this.blob) {
       const filename = `${this.group.value.firstname}-${this.group.value.lastname}-cv`;
@@ -104,10 +111,15 @@ export class AppComponent {
 
   }
 
-  public importTemplate(target: any) {
+  public importTemplate(target: EventTarget | null) {
+    if (!(target instanceof HTMLInputElement && target?.files)) {
+      throw Error('Target should be input element with type="file"');
+    }
     const reader = new FileReader();
-    const onReaderLoad = (event: any) => {
-      this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
+    const onReaderLoad = (event: ProgressEvent<FileReader>) => {
+      if (event.target?.result instanceof ArrayBuffer) {
+        this.documentService.updateTemplate(event.target.result, this.group.value as ITemplateObject);
+      }
     };
 
     reader.onload = onReaderLoad;
@@ -115,7 +127,7 @@ export class AppComponent {
   }
 
   private createGroupForFormArray(formArrayName: string, value?: TPossibleFormValue): FormGroup {
-    switch(formArrayName) {
+    switch (formArrayName) {
       case 'methods':
         return new FormGroup({
           method: new FormControl((value as IMethod)?.method || ''),

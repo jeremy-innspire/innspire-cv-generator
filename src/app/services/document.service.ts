@@ -10,50 +10,87 @@ const expressionParser = require("docxtemplater/expressions.js");
   providedIn: 'root'
 })
 export class DocumentService {
-  private documentSubject = new Subject<Blob>()
-  private templateArrayBuffer: ArrayBuffer | undefined;
-  public documentObservable = this.documentSubject.asObservable();
-
-  constructor(private httpClient: HttpClient) { }
-
-  public generate(form: ITemplateObject): void {
-    if (this.templateArrayBuffer) {
-      this.createAndNextDocument(this.templateArrayBuffer, form);
-    } else {
-      this.httpClient.get('assets/InnSpire-cv-template.docx', {
-        responseType: 'arraybuffer'
-      }).subscribe((arrayBuffer) => {
-        this.templateArrayBuffer = arrayBuffer;
-        this.createAndNextDocument(arrayBuffer, form)
-      });
+    private photo: File | undefined;
+    private documentSubject = new Subject<Blob>()
+    private templateArrayBuffer: ArrayBuffer | undefined;
+    private mappingValues: ITemplateObject = {
+      firstname: '',
+      lastname: '',
+      role: '',
+      birthdate: '',
+      city: '',
+      phone: '',
+      mail: '',
+      linkedin: '',
+      motivation: '',
+      emailManager: '',
+      phoneManager: '',
+      hobbyDescription: '',
+      methods: [],
+      tools: [],
+      certificates: [],
+      languages: [],
+      experiences: [],
+      educations: []
+    };
+    public documentObservable = this.documentSubject.asObservable();
+  
+    constructor(private httpClient: HttpClient) { }
+  
+    public generate(form: ITemplateObject): void {
+      if (this.templateArrayBuffer) {
+        this.mappingValues = form;
+        this.createAndNextDocument();
+      } else {
+        this.httpClient.get('assets/InnSpire-cv-template.docx', {
+          responseType: 'arraybuffer'
+        }).subscribe((arrayBuffer) => {
+          this.templateArrayBuffer = arrayBuffer;
+          this.mappingValues = form;
+          this.createAndNextDocument()
+        });
+      }
     }
-  }
-
-  public updateTemplate(templateArrayBuffer: ArrayBuffer, formValue: ITemplateObject): void {
-    this.templateArrayBuffer = templateArrayBuffer;
-    this.createAndNextDocument(templateArrayBuffer, formValue);
-  }
-
-  private createAndNextDocument(templateArrayBuffer: ArrayBuffer, form: ITemplateObject) {
-    const zip = new PizZip(templateArrayBuffer);
-    const doc = new Docxtemplater(zip, {
+  
+    public updatePhoto(photo: File): void {
+      this.photo = photo;
+      this.createAndNextDocument();
+    }
+  
+    public updateTemplate(templateArrayBuffer: ArrayBuffer, formValue: ITemplateObject): void {
+      this.templateArrayBuffer = templateArrayBuffer;
+      this.mappingValues = formValue;
+      this.createAndNextDocument();
+    }
+  
+    private async createAndNextDocument() {
+      if(!this.templateArrayBuffer) {
+        return;
+      }
+      const zip = new PizZip(this.templateArrayBuffer);
+      const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
         parser: expressionParser
-    });
-
-    const newForm = {
-      ...form,
-      experiences: [...form.experiences].reverse(),
-      educations: [...form.educations].reverse()
-    }
-
-    doc.render(newForm);
-    const uInt8Array: Uint8Array = doc.getZip().generate({
+      });
+  
+      const newForm = {
+        ...this.mappingValues,
+        experiences: [...this.mappingValues.experiences].reverse(),
+        educations: [...this.mappingValues.educations].reverse()
+      }
+  
+      doc.render(newForm);
+      const docZip = doc.getZip();
+      if(this.photo) {
+        const mediaFolder = docZip.folder('word').folder('media');
+        mediaFolder.file('image1.png', await this.photo.arrayBuffer());
+      }
+      const uInt8Array: Uint8Array = docZip.generate({
         type: 'nodebuffer',
         compression: 'DEFLATE',
-    });
-
-    this.documentSubject.next(new Blob([uInt8Array]));
-  }
+      });
+  
+      this.documentSubject.next(new Blob([uInt8Array]));
+    }
 }
